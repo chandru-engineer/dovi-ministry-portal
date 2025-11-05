@@ -2,80 +2,55 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import DashboardLayout from "@/components/dashboard-layout"
-import { useToast } from "@/hooks/use-toast"
-
-interface MinistryData {
-  username: string
-  email: string
-  org_name: string
-  did_url: string
-  phone_number: string
-  address: string
-  user_type: string
-}
+import { Button } from "@/components/ui/button"
+import { Shield, LogOut } from "lucide-react"
+import { PostCreationForm } from "@/components/post-creation-form"
+import { IssuedPostsList } from "@/components/issued-posts-list"
 
 export default function DashboardPage() {
-  const [ministryData, setMinistryData] = useState<MinistryData | null>(null)
-  const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const { toast } = useToast()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
 
   useEffect(() => {
-    const fetchMinistryData = async () => {
-      const token = localStorage.getItem("access_token")
-
-      if (!token) {
-        router.push("/")
-        return
-      }
-
-      try {
-        const response = await fetch("https://api.dholakpur.fun/users/me/", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch ministry data")
-        }
-
-        const data = await response.json()
-        setMinistryData({
-          username: data.username || "Ministry",
-          email: data.email || "",
-          org_name: data.profile?.org_name || "Ministry of Dholakpur",
-          did_url: data.profile?.did_url || "DID-UNKNOWN",
-          phone_number: data.profile?.phone_number || "",
-          address: data.profile?.address || "",
-          user_type: data.profile?.user_type || "MINISTRY",
-        })
-      } catch (error) {
-        toast({
-          title: "Error",
-          description: "Failed to load ministry data",
-          variant: "destructive",
-        })
-        router.push("/")
-      } finally {
-        setLoading(false)
-      }
+    const token = localStorage.getItem("access_token")
+    if (!token) {
+      router.push("/")
+    } else {
+      setIsAuthenticated(true)
     }
+  }, [router])
 
-    fetchMinistryData()
-  }, [router, toast])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-full animate-spin mb-4">
-            <span className="text-white">✓</span>
-          </div>
-          <p className="text-gray-600">Loading Ministry Portal...</p>
-        </div>
-      </div>
-    )
+  const handleLogout = () => {
+    localStorage.removeItem("access_token")
+    localStorage.removeItem("refresh_token")
+    router.push("/")
   }
 
-  return <DashboardLayout ministryData={ministryData} />
+  if (!isAuthenticated) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      <nav className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <Shield className="w-6 h-6 text-primary-foreground" />
+            </div>
+            <h1 className="text-xl font-bold">Ministry AI Credential Portal</h1>
+          </div>
+          <Button variant="outline" onClick={handleLogout} className="gap-2 bg-transparent">
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
+        </div>
+      </nav>
+
+      <main className="container mx-auto px-4 py-8 space-y-8">
+        <PostCreationForm />
+        <IssuedPostsList />
+      </main>
+    </div>
+  )
 }

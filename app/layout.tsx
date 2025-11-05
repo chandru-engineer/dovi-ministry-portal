@@ -2,14 +2,15 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { Toaster } from "@/components/ui/toaster"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Dholakpur Ministry Portal | Powered by DOVI",
-  description: "Ministry of Dholakpur - Secure Government Portal powered by DOVI",
+  title: "Ministry AI Credential Portal",
+  description: "Official government portal for AI-verified verifiable credentials",
   generator: "v0.app",
 }
 
@@ -22,6 +23,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         {children}
+        <Toaster />
         <Analytics />
       </body>
     </html>
